@@ -6,16 +6,48 @@ namespace robodog.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    private readonly DogStorage _dogStorage;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(DogStorage dogStorage)
     {
-        _logger = logger;
+        _dogStorage = dogStorage;
     }
 
     public IActionResult Index()
     {
-        return View();
+        return View(_dogStorage.Dogs);
+    }
+
+    public IActionResult AddDogManually([FromQuery] string name, int age, string breed)
+    {
+        if (name is not null)
+        {
+            _dogStorage.AddDogFromUserInput(name, age, breed);
+            return RedirectToAction(nameof(Index), "Home");
+        }
+        ViewData["Breeds"] = DogCreator.Breeds;
+        return View(_dogStorage.Dogs);
+    }
+
+    public IActionResult EditDog(string action, [FromQuery] string name, int age, string breed)
+    {
+        ViewData["Breeds"] = DogCreator.Breeds;
+        ViewBag.DogEdited = new Dog
+        {
+            Name = name,
+            Age = age,
+            Breed = new Breed
+            {
+                Name = breed
+            }
+        };
+        return View(_dogStorage.Dogs);
+    }
+
+    public IActionResult CreateRandomDog()
+    {
+        _dogStorage.AddRandomDog();
+        return RedirectToAction(nameof(Index), "Home");
     }
 
     public IActionResult Privacy()

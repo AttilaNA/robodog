@@ -1,0 +1,119 @@
+﻿@model List<Dog>
+
+@{
+    ViewData["Title"] = "Edited Dog";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Dog creator</h1>
+    <p>Number of Dogs: @Model.Count</p>
+    <form asp-action="createRandomDog" method="get" style="margin-bottom: 5px;">
+        <button type="submit">Create a new random dog</button>
+    </form>
+    <form asp-action="AddDogManually" method="get" style="margin-bottom: 5px;">
+        <button type="submit">Create a new dog manually</button>
+    </form>
+    <div id="update-dog" style="border: 5px solid beige; margin-bottom: 5px;">
+        <div id="update-dog-old" data-old-name="@ViewBag.DogEdited.Name" data-old-age="@ViewBag.DogEdited.Age" data-old-breed="@ViewBag.DogEdited.Breed.Name"></div>
+        <label for="newName" style="margin-right: 5px;"><h1>Name:</h1></label><input type="text" name="newName" id="newName" value="@ViewBag.DogEdited.Name" required><br>
+        <label for="newAge" style="margin-right: 5px;"><p>Age:</p></label><input type="number" name="newAge" id="newAge" min="1" value="@ViewBag.DogEdited.Age"><br>
+        <label for="newBreed" style="margin-right: 5px;"><p>Breed:</p></label>
+        <select name="newBreed" id="newBreed">
+            @foreach (var breed in (List<string>)ViewData["Breeds"])
+            {
+                if (breed == ViewBag.DogEdited.Breed.Name)
+                {
+                    <option selected>@breed</option>
+                } else
+                {
+                    <option>@breed</option>
+                }    
+            }
+        </select><br>
+        <button id="update-dog-button" style="margin-bottom: 5px;">Edit dog</button>
+    </div>
+    <script>
+        document.getElementById('update-dog-button').addEventListener('click', updateDog);
+        function updateDog(){
+            if(!document.querySelector('[id="newName"]').checkValidity()){
+                document.querySelector('[id="newName"]').reportValidity();
+            } else
+            {
+                const reqHeader = new Headers({'Content-Type': 'text/json'});
+            const data = {
+                oldName: document.querySelector('[id="update-dog-old"]').dataset.oldName,
+                oldAge: document.querySelector('[id="update-dog-old"]').dataset.oldAge,
+                oldBreed: {
+                    name: document.querySelector('[id="update-dog-old"]').dataset.oldBreed
+                },
+                newName: document.querySelector('[id="newName"]').value,
+                newAge: document.querySelector('[id="newAge"]').value,
+                newBreed: {
+                    name: document.querySelector('[id="newBreed"]').value
+                }
+            };
+            const initObject = {
+                method: 'PUT',
+                headers: reqHeader,
+                body: JSON.stringify(data)
+            };
+            const userRequest = new Request('../api/dog/updateDog', initObject);
+            fetch(userRequest)
+                .then(function (response) {
+                    if(response.ok){
+                        window.location.href = '/';
+                    }
+                })
+                .catch(function (err) {
+                    console.log("Something went wrong!", err);
+                });
+            }
+        }
+    </script>
+    @if(Model.Count > 0)
+    {
+        foreach(var dog in Model)
+        {
+            <form asp-action="EditDog" method="get" style="border: 5px solid beige; margin-bottom: 5px;">
+                <h2>Name: @dog.Name</h2>
+                <input type="text" name="name" value="@dog.Name" hidden>
+                <p>Age: @dog.Age</p>
+                <input type="number" name="age" value="@dog.Age" hidden>
+                <p>Breed: @dog.Breed.Name</p>
+                <input type="text" name="breed" value="@dog.Breed.Name" hidden>
+                <button type="submit" style="margin-bottom: 5px;">Edit</button>
+                <button type="button" class="delete-dog-button" style="margin-bottom: 5px;" data-name="@dog.Name" data-age="@dog.Age" data-breed="@dog.Breed.Name">Delete</button>
+            </form>
+        }
+    }
+    <script>
+        [...document.getElementsByClassName('delete-dog-button')].forEach(button => {
+            button.addEventListener('click', deleteDog);
+            function deleteDog() {
+                const reqHeader = new Headers({ 'Content-Type': 'text/json' });
+                const data = {
+                    name: button.dataset.name,
+                    age: button.dataset.age,
+                    breed: {
+                        name: button.dataset.breed
+                    }
+                };
+                const initObject = {
+                    method: 'DELETE',
+                    headers: reqHeader,
+                    body: JSON.stringify(data)
+                };
+                const userRequest = new Request('../api/dog/deleteDog', initObject);
+                fetch(userRequest)
+                    .then(function (response) {
+                        if (response.ok) {
+                            window.location.href = '/';
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log("Something went wrong!", err);
+                    });
+            }
+        });
+    </script>
+</div>

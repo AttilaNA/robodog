@@ -1,7 +1,7 @@
 ﻿@model List<Dog>
 
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Add Dog Page";
 }
 
 <div class="text-center">
@@ -10,8 +10,23 @@
     <form asp-action="createRandomDog" method="post" style="margin-bottom: 5px;">
         <button type="submit">Create a new random dog</button>
     </form>
-    <form asp-action="AddDogManually" method="get" style="margin-bottom: 5px;">
-        <button type="submit">Create a new dog manually</button>
+    <form asp-action="addDogManually" method="get" style="border: 5px solid beige; margin-bottom: 5px;">
+        <label for="name" style="margin-right: 5px;">
+            <h1>Name:</h1>
+        </label><input type="text" name="name" id="name" required><br>
+        <label for="age" style="margin-right: 5px;">
+            <p>Age:</p>
+        </label><input type="number" name="age" id="age" min="1" required><br>
+        <label for="breed" style="margin-right: 5px;">
+            <p>Breed:</p>
+        </label>
+        <select name="breed" id="breed" required>
+            @foreach (var breed in (List<string>)ViewData["Breeds"])
+            {
+                <option>@breed</option>
+            }
+        </select>
+        <br><button type="submit" style="margin-bottom: 5px;">Create a new dog</button>
     </form>
     @if (Model.Count > 0)
     {
@@ -25,7 +40,8 @@
                 <p>Breed: @dog.Breed.Name</p>
                 <input type="text" name="breed" value="@dog.Breed.Name" hidden>
                 <button type="submit" style="margin-bottom: 5px;">Edit</button>
-                <button type="button" class="delete-dog-button" style="margin-bottom: 5px;" data-name="@dog.Name" data-age="@dog.Age" data-breed="@dog.Breed.Name">Delete</button>
+                <button type="button" class="delete-dog-button" style="margin-bottom: 5px;" data-name="@dog.Name"
+                    data-age="@dog.Age" data-breed="@dog.Breed.Name">Delete</button>
             </form>
         }
     }
